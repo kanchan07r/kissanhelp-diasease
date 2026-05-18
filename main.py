@@ -2,22 +2,33 @@ import streamlit as st
 import tensorflow as tf
 import numpy as np
 from PIL import Image
+import os
+import gdown
 
-# Load model once and cache it
+# ── Download model from Google Drive if not present ───────────────────────────
+MODEL_PATH = "trained_plant_disease_model.keras"
+FILE_ID = "1tNHpUJrtfCe15CkovBOFLIF-PE0n7qSe"
+
+if not os.path.exists(MODEL_PATH):
+    with st.spinner("⏳ Loading AI model for the first time... Please wait."):
+        url = f"https://drive.google.com/uc?id={FILE_ID}"
+        gdown.download(url, MODEL_PATH, quiet=False)
+
+# ── Load model once and cache it ──────────────────────────────────────────────
 @st.cache_resource
 def load_model():
-    return tf.keras.models.load_model("trained_plant_disease_model.keras")
+    return tf.keras.models.load_model(MODEL_PATH)
 
-# Function to load and predict the image
+# ── Prediction function ────────────────────────────────────────────────────────
 def model_prediction(test_image):
     model = load_model()
     image = tf.keras.preprocessing.image.load_img(test_image, target_size=(128, 128))
     input_arr = tf.keras.preprocessing.image.img_to_array(image)
-    input_arr = np.array([input_arr])  # Convert single image to batch
+    input_arr = np.array([input_arr])
     predictions = model.predict(input_arr)
-    return np.argmax(predictions)  # Return index of max element
+    return np.argmax(predictions)
 
-# Banner Image
+# ── Banner Image ───────────────────────────────────────────────────────────────
 try:
     img = Image.open("Diseases.png")
     st.image(img, use_column_width=True)
@@ -27,7 +38,7 @@ except:
         unsafe_allow_html=True
     )
 
-# App Modes
+# ── App Modes ──────────────────────────────────────────────────────────────────
 app_mode = st.selectbox("Select a Page", ["HOME", "DISEASE RECOGNITION"])
 
 # ── HOME PAGE ──────────────────────────────────────────────────────────────────
@@ -44,7 +55,7 @@ if app_mode == "HOME":
         unsafe_allow_html=True,
     )
 
-    # Features Section using cards (no images needed)
+    # Features Section
     st.markdown("### Features")
     col1, col2, col3 = st.columns(3)
 
@@ -86,7 +97,7 @@ if app_mode == "HOME":
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # How It Works Section
+    # How It Works
     st.markdown("### How It Works")
     st.write(
         """
@@ -108,7 +119,6 @@ if app_mode == "HOME":
         """,
         unsafe_allow_html=True,
     )
-
 
 # ── DISEASE RECOGNITION PAGE ───────────────────────────────────────────────────
 elif app_mode == "DISEASE RECOGNITION":
@@ -150,42 +160,42 @@ elif app_mode == "DISEASE RECOGNITION":
 
             # Disease Information
             disease_info = {
-                'Apple___Apple_scab': 'A fungal disease caused by *Venturia inaequalis*, leading to dark, scabby lesions on leaves and fruit, affecting fruit quality and yield.',
-                'Apple___Black_rot': 'Caused by the fungus *Botryosphaeria obtusa*, it results in black, rotten spots on apples and can also infect leaves and bark.',
-                'Apple___Cedar_apple_rust': 'A fungal disease caused by *Gymnosporangium juniperi-virginianae*, leading to yellow-orange spots on apple leaves and fruit.',
+                'Apple___Apple_scab': 'A fungal disease caused by *Venturia inaequalis*, leading to dark, scabby lesions on leaves and fruit.',
+                'Apple___Black_rot': 'Caused by the fungus *Botryosphaeria obtusa*, resulting in black, rotten spots on apples.',
+                'Apple___Cedar_apple_rust': 'A fungal disease caused by *Gymnosporangium juniperi-virginianae*, leading to yellow-orange spots.',
                 'Apple___healthy': 'No diseases detected; the apple plant appears healthy.',
                 'Blueberry___healthy': 'No diseases detected; the blueberry plant appears healthy.',
-                'Cherry_(including_sour)___Powdery_mildew': 'A fungal disease caused by *Podosphaera clandestina*, leading to white, powdery fungal growth on leaves, shoots, and fruit.',
+                'Cherry_(including_sour)___Powdery_mildew': 'A fungal disease caused by *Podosphaera clandestina*, leading to white powdery growth.',
                 'Cherry_(including_sour)___healthy': 'No diseases detected; the cherry plant appears healthy.',
-                'Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot': 'Caused by the fungus *Cercospora zeae-maydis*, leading to rectangular gray lesions on maize leaves.',
-                'Corn_(maize)___Common_rust_': 'A fungal disease caused by *Puccinia sorghi*, resulting in reddish-brown pustules on both leaf surfaces.',
-                'Corn_(maize)___Northern_Leaf_Blight': 'Caused by the fungus *Setosphaeria turcica*, leading to cigar-shaped gray-green lesions on leaves.',
+                'Corn_(maize)___Cercospora_leaf_spot Gray_leaf_spot': 'Caused by *Cercospora zeae-maydis*, leading to rectangular gray lesions on maize leaves.',
+                'Corn_(maize)___Common_rust_': 'A fungal disease caused by *Puccinia sorghi*, resulting in reddish-brown pustules.',
+                'Corn_(maize)___Northern_Leaf_Blight': 'Caused by *Setosphaeria turcica*, leading to cigar-shaped gray-green lesions.',
                 'Corn_(maize)___healthy': 'No diseases detected; the corn plant appears healthy.',
                 'Grape___Black_rot': 'A fungal disease caused by *Guignardia bidwellii*, leading to black spots on leaves and fruit.',
-                'Grape___Esca_(Black_Measles)': 'A complex disease involving multiple fungi, leading to dark streaks on the wood and black spots on leaves and berries.',
-                'Grape___Leaf_blight_(Isariopsis_Leaf_Spot)': 'Caused by the fungus *Pseudocercospora vitis*, leading to irregular, necrotic spots on leaves.',
+                'Grape___Esca_(Black_Measles)': 'A complex disease involving multiple fungi, causing dark streaks on wood and black spots.',
+                'Grape___Leaf_blight_(Isariopsis_Leaf_Spot)': 'Caused by *Pseudocercospora vitis*, leading to irregular necrotic spots on leaves.',
                 'Grape___healthy': 'No diseases detected; the grapevine appears healthy.',
-                'Orange___Haunglongbing_(Citrus_greening)': 'A bacterial disease caused by *Candidatus Liberibacter* species, leading to yellowing of shoots and eventual tree death.',
-                'Peach___Bacterial_spot': 'Caused by the bacterium *Xanthomonas campestris pv. pruni*, leading to small, water-soaked spots on leaves and fruit.',
+                'Orange___Haunglongbing_(Citrus_greening)': 'A bacterial disease caused by *Candidatus Liberibacter*, leading to yellowing and tree death.',
+                'Peach___Bacterial_spot': 'Caused by *Xanthomonas campestris pv. pruni*, leading to water-soaked spots on leaves and fruit.',
                 'Peach___healthy': 'No diseases detected; the peach tree appears healthy.',
-                'Pepper,_bell___Bacterial_spot': 'Caused by the bacterium *Xanthomonas campestris pv. vesicatoria*, leading to dark, water-soaked spots on leaves and fruit.',
+                'Pepper,_bell___Bacterial_spot': 'Caused by *Xanthomonas campestris pv. vesicatoria*, leading to dark spots on leaves and fruit.',
                 'Pepper,_bell___healthy': 'No diseases detected; the bell pepper plant appears healthy.',
-                'Potato___Early_blight': 'A fungal disease caused by *Alternaria solani*, leading to concentric ring lesions on leaves and tubers.',
-                'Potato___Late_blight': 'Caused by the oomycete *Phytophthora infestans*, leading to water-soaked lesions on leaves and tubers.',
+                'Potato___Early_blight': 'A fungal disease caused by *Alternaria solani*, leading to concentric ring lesions.',
+                'Potato___Late_blight': 'Caused by *Phytophthora infestans*, leading to water-soaked lesions on leaves and tubers.',
                 'Potato___healthy': 'No diseases detected; the potato plant appears healthy.',
                 'Raspberry___healthy': 'No diseases detected; the raspberry plant appears healthy.',
                 'Soybean___healthy': 'No diseases detected; the soybean plant appears healthy.',
-                'Squash___Powdery_mildew': 'A fungal disease caused by *Podosphaera xanthii*, leading to white, powdery fungal growth on leaves and stems.',
-                'Strawberry___Leaf_scorch': 'Caused by the fungus *Diplocarpon earlianum*, leading to irregular, dark purple spots on leaves.',
+                'Squash___Powdery_mildew': 'A fungal disease caused by *Podosphaera xanthii*, leading to white powdery growth.',
+                'Strawberry___Leaf_scorch': 'Caused by *Diplocarpon earlianum*, leading to dark purple spots on leaves.',
                 'Strawberry___healthy': 'No diseases detected; the strawberry plant appears healthy.',
-                'Tomato___Bacterial_spot': 'Caused by the bacterium *Xanthomonas campestris pv. vesicatoria*, leading to small, water-soaked spots on leaves and fruit.',
-                'Tomato___Early_blight': 'A fungal disease caused by *Alternaria solani*, leading to concentric ring lesions on leaves, stems, and fruit.',
-                'Tomato___Late_blight': 'Caused by the oomycete *Phytophthora infestans*, leading to large, water-soaked lesions on leaves and fruit.',
-                'Tomato___Leaf_Mold': 'A fungal disease caused by *Passalora fulva*, leading to yellow spots on upper leaf surfaces.',
-                'Tomato___Septoria_leaf_spot': 'Caused by the fungus *Septoria lycopersici*, leading to small, circular spots with gray centers and dark borders.',
+                'Tomato___Bacterial_spot': 'Caused by *Xanthomonas campestris pv. vesicatoria*, leading to water-soaked spots.',
+                'Tomato___Early_blight': 'A fungal disease caused by *Alternaria solani*, leading to concentric ring lesions.',
+                'Tomato___Late_blight': 'Caused by *Phytophthora infestans*, leading to large water-soaked lesions.',
+                'Tomato___Leaf_Mold': 'A fungal disease caused by *Passalora fulva*, leading to yellow spots on leaves.',
+                'Tomato___Septoria_leaf_spot': 'Caused by *Septoria lycopersici*, leading to small circular spots with gray centers.',
                 'Tomato___Spider_mites Two-spotted_spider_mite': 'Infestation by *Tetranychus urticae*, leading to stippling and bronzing of leaves.',
-                'Tomato___Target_Spot': 'Caused by the fungus *Corynespora cassiicola*, leading to dark, concentric lesions on leaves, stems, and fruit.',
-                'Tomato___Tomato_Yellow_Leaf_Curl_Virus': 'A viral disease transmitted by whiteflies, leading to yellowing and curling of leaves and stunted growth.',
+                'Tomato___Target_Spot': 'Caused by *Corynespora cassiicola*, leading to dark concentric lesions.',
+                'Tomato___Tomato_Yellow_Leaf_Curl_Virus': 'A viral disease transmitted by whiteflies, causing yellowing and curling of leaves.',
                 'Tomato___Tomato_mosaic_virus': 'A viral disease causing mottling, yellowing, and distortion of leaves.',
                 'Tomato___healthy': 'No diseases detected; the tomato plant appears healthy.'
             }
@@ -193,7 +203,6 @@ elif app_mode == "DISEASE RECOGNITION":
             predicted_class = class_names[result_index]
             st.success(f"✅ KissanHelp predicts this as **{predicted_class}**.")
 
-            # Display disease details
             with st.expander(f"ℹ️ About {predicted_class}"):
                 if predicted_class in disease_info:
                     st.markdown(f"**Description:** {disease_info[predicted_class]}")
@@ -201,7 +210,7 @@ elif app_mode == "DISEASE RECOGNITION":
                         f"[🔗 Learn more about {predicted_class}](https://example.com/{predicted_class.replace(' ', '_')})"
                     )
                 else:
-                    st.warning("No additional information is available for this prediction.")
+                    st.warning("No additional information available for this prediction.")
 
     # Footer
     st.markdown(
