@@ -18,8 +18,14 @@ def model_prediction(test_image):
     return np.argmax(predictions)  # Return index of max element
 
 # Banner Image
-img = Image.open("Diseases.png")
-st.image(img, use_column_width=True)
+try:
+    img = Image.open("Diseases.png")
+    st.image(img, use_column_width=True)
+except:
+    st.markdown(
+        "<h2 style='text-align:center; color:#4CAF50;'>🌿 KissanHelp</h2>",
+        unsafe_allow_html=True
+    )
 
 # App Modes
 app_mode = st.selectbox("Select a Page", ["HOME", "DISEASE RECOGNITION"])
@@ -38,18 +44,47 @@ if app_mode == "HOME":
         unsafe_allow_html=True,
     )
 
-    # Features Section
+    # Features Section using cards (no images needed)
     st.markdown("### Features")
-    col1, col2, col3 = st.columns([1, 1, 1])
+    col1, col2, col3 = st.columns(3)
+
     with col1:
-        st.image("image1.png", caption="Disease Detection", use_column_width=True)
-        st.write("Identify plant diseases with AI.")
+        st.markdown(
+            """
+            <div style='background-color:#e8f5e9; padding:20px; border-radius:12px; text-align:center; border:1px solid #c8e6c9;'>
+                <div style='font-size:3rem;'>🔬</div>
+                <h4 style='color:#2e7d32;'>Disease Detection</h4>
+                <p style='color:#555; font-size:14px;'>Identify plant diseases with AI instantly.</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
     with col2:
-        st.image("image3.1.png", caption="Actionable Insights", use_column_width=True)
-        st.write("Get disease details and remedies.")
+        st.markdown(
+            """
+            <div style='background-color:#e8f5e9; padding:20px; border-radius:12px; text-align:center; border:1px solid #c8e6c9;'>
+                <div style='font-size:3rem;'>💡</div>
+                <h4 style='color:#2e7d32;'>Actionable Insights</h4>
+                <p style='color:#555; font-size:14px;'>Get disease details and remedies.</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
     with col3:
-        st.image("image2.1.png", caption="Real-Time Results", use_column_width=True)
-        st.write("Receive instant predictions.")
+        st.markdown(
+            """
+            <div style='background-color:#e8f5e9; padding:20px; border-radius:12px; text-align:center; border:1px solid #c8e6c9;'>
+                <div style='font-size:3rem;'>⚡</div>
+                <h4 style='color:#2e7d32;'>Real-Time Results</h4>
+                <p style='color:#555; font-size:14px;'>Receive instant predictions.</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    st.markdown("<br>", unsafe_allow_html=True)
 
     # How It Works Section
     st.markdown("### How It Works")
@@ -61,7 +96,7 @@ if app_mode == "HOME":
         """
     )
 
-    # Footer with your name and college
+    # Footer
     st.markdown(
         """
         <div style="text-align: center; margin-top: 50px; font-size: 14px; color: #666;">
@@ -180,3 +215,4 @@ elif app_mode == "DISEASE RECOGNITION":
         """,
         unsafe_allow_html=True,
     )
+    
